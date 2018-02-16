@@ -1,4 +1,4 @@
-package org.graalvm.test.geom;
+package org.apidesign.demo.geom;
 
 import java.util.Random;
 

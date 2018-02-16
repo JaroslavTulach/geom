@@ -1,4 +1,4 @@
-package org.graalvm.test.geom;
+package org.apidesign.demo.geom;
 
 public abstract class Shape {
     public abstract double area();
