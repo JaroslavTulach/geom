@@ -3,9 +3,9 @@ package org.apidesign.demo.geom;
 import java.util.Random;
 
 final class Geom {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         if (args.length < 4) {
-            System.err.println("Usage: <number_of_objects> <random_seed_or_\"now\"> <no_repeats> <object_types>*");
+            System.err.println("Usage: <number_of_objects> <random_seed_or_\"now\"> <#repeats> <object_types>*");
             System.err.println("       object types can be: circle square rectangle triangle");
             System.exit(1);
         }
@@ -32,7 +32,8 @@ final class Geom {
                 System.err.println("sum: " + sum);
             }
         }
-        System.err.println("last round " + (System.currentTimeMillis() - prev) + " ms");
+        System.err.println("last round " + (System.currentTimeMillis() - prev) + " ms. Press Enter to exit...");
+        System.in.read();
     }
 
     static Shape[] generate(int offset, String[] types, int count, long seed) {
