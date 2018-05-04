@@ -13,6 +13,7 @@
         <mainClass>org.apidesign.demo.geom.Geom</mainClass>
         <nativeName>geom</nativeName>
         <aot.profile>AOTPriorityInline</aot.profile>
+        <native.image>${java.home}/bin/native-image</native.image>
     </properties>
     <build>
         <plugins>
@@ -28,11 +29,26 @@
                     </archive>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <executable>${native.image}</executable>
+                    <arguments>
+                        <argument>-H:Name=${basedir}/target/${nativeName}</argument>
+                        <argument>-H:+${aot.profile}</argument>
+                        <argument>-classpath</argument>
+                        <classpath />
+                        <argument>${mainClass}</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <profiles>
         <profile>
-            <id>svm</id>
+            <id>svm-jdk</id>
             <activation>
                 <file>
                     <exists>${java.home}/bin/native-image</exists>
@@ -43,7 +59,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
                         <executions>
                             <execution>
                                 <goals>
@@ -52,16 +67,30 @@
                                 <phase>package</phase>
                             </execution>
                         </executions>
-                        <configuration>
-                            <executable>${java.home}/bin/native-image</executable>
-                            <arguments>
-                                <argument>-H:Name=target/${nativeName}</argument>
-                                <argument>-H:+${aot.profile}</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
-                                <argument>${mainClass}</argument>
-                            </arguments>
-                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>svm</id>
+            <activation>
+                <property>
+                    <name>native.image</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
