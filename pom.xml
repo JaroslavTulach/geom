@@ -37,7 +37,7 @@
                     <executable>${native.image}</executable>
                     <arguments>
                         <argument>-H:Name=${basedir}/target/${nativeName}</argument>
-                        <argument>-H:+${aot.profile}</argument>
+                        <argument>-H:${aot.profile}</argument>
                         <argument>-classpath</argument>
                         <classpath />
                         <argument>${mainClass}</argument>
@@ -98,18 +98,18 @@
         <profile>
             <id>ProfilesCollect</id>
             <properties>
-                <aot.profile>ProfilesCollect</aot.profile>
+                <aot.profile>+ProfilesCollect</aot.profile>
             </properties>
         </profile>
         <profile>
             <id>ProfilesUse</id>
             <activation>
                 <file>
-                    <exists>target/${nativeName}.iprof</exists>
+                    <exists>default.iprof</exists>
                 </file>
             </activation>
             <properties>
-                <aot.profile>ProfilesUse</aot.profile>
+                <aot.profile>ProfilesUse=default.iprof</aot.profile>
             </properties>
         </profile>
     </profiles>
