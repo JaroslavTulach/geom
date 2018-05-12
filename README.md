@@ -4,7 +4,7 @@ the **SubstrateVM** compilation with the gathered data.
 ### Initial Benchmarking
 
 Get [GraalVM](http://www.oracle.com/technetwork/oracle-labs/program-languages/),
-version 0.33 or newer and then execute:
+version 1.0.0rc1 or newer and then execute:
 
 ```bash
 $ JAVA_HOME=/graalvm/ mvn clean install
@@ -31,8 +31,8 @@ $ ./target/geom 15000 now 30 square rectangle
 ...
 sum: 4384.131082976915
 last round 108 ms
-$ ls target/*iprof
-target/geom.iprof
+$ ls *iprof
+default.iprof
 ```
 Now the same algorithm runs slower, however that is because we are collecting
 the profiling data. Once the program is finished, an `.iprof` file is generated.
