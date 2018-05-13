@@ -37,7 +37,7 @@
                     <executable>${native.image}</executable>
                     <arguments>
                         <argument>-H:Name=${basedir}/target/${nativeName}</argument>
-                        <argument>-R:ProfilesDumpFile=http://localhost:8080/</argument>
+                        <argument>-R:ProfilesDumpFile=ws://localhost:8080/agent/1.0</argument>
                         <argument>-H:${aot.profile}</argument>
                         <argument>-classpath</argument>
                         <classpath />
