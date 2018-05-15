@@ -110,7 +110,7 @@
                 </file>
             </activation>
             <properties>
-                <aot.profile>ProfilesUse=default.iprof</aot.profile>
+                <aot.profile>ProfilesUse=${basedir}/default.iprof</aot.profile>
             </properties>
         </profile>
     </profiles>
