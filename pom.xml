@@ -12,7 +12,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <mainClass>org.apidesign.demo.geom.Geom</mainClass>
         <nativeName>geom</nativeName>
-        <aot.profile>+AOTPriorityInline</aot.profile>
+        <aot.profile>-J-Dignore=true</aot.profile>
         <native.image>${java.home}/bin/native-image</native.image>
     </properties>
     <build>
@@ -36,9 +36,9 @@
                 <configuration>
                     <executable>${native.image}</executable>
                     <arguments>
+                        <argument>${aot.profile}</argument>
                         <argument>-H:Name=${basedir}/target/${nativeName}</argument>
                         <argument>-R:ProfilesDumpFile=ws://localhost:8080/agent/1.0</argument>
-                        <argument>-H:${aot.profile}</argument>
                         <argument>-classpath</argument>
                         <classpath />
                         <argument>${mainClass}</argument>
@@ -97,12 +97,6 @@
             </build>
         </profile>
         <profile>
-            <id>ProfilesCollect</id>
-            <properties>
-                <aot.profile>+ProfilesCollect</aot.profile>
-            </properties>
-        </profile>
-        <profile>
             <id>ProfilesUse</id>
             <activation>
                 <file>
@@ -110,7 +104,13 @@
                 </file>
             </activation>
             <properties>
-                <aot.profile>ProfilesUse=${basedir}/default.iprof</aot.profile>
+                <aot.profile>--pgo</aot.profile>
+            </properties>
+        </profile>
+        <profile>
+            <id>ProfilesCollect</id>
+            <properties>
+                <aot.profile>--pgo-instrument</aot.profile>
             </properties>
         </profile>
     </profiles>
