@@ -27,12 +27,12 @@ have to generate special version of the binary:
 
 ```bash
 $ JAVA_HOME=/graalvm/ mvn clean install -PProfilesCollect
+$ /graalvm/bin/gemasrv &
 $ ./target/geom 15000 now 30 square rectangle
 ...
 sum: 4384.131082976915
 last round 108 ms
-$ ls *iprof
-default.iprof
+$ curl http://localhost:8080/api/1.0/127.0.0.1:29575/pgo >default.iprof
 ```
 Now the same algorithm runs slower, however that is because we are collecting
 the profiling data. Once the program is finished, an `.iprof` file is generated.
