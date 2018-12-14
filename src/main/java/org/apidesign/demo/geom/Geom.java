@@ -20,10 +20,10 @@ final class Geom {
         int repeat = Integer.parseInt(args[2]);
         Shape[] samples = generate(3, args, cnt, seed);
 
-        double expected = area(samples);
+        double expected = computeArea(samples);
         long prev = System.currentTimeMillis();
         for (int i = 0; i < repeat * 1000; i++) {
-            double sum = area(samples);
+            double sum = computeArea(samples);
             if (sum != expected) {
                 throw new IllegalStateException("Wrong result " + sum + " was " + expected);
             }
@@ -63,7 +63,7 @@ final class Geom {
         return arr;
     }
 
-    static double area(Shape[] all) {
+    static double computeArea(Shape[] all) {
         double sum = 0;
         for (Shape shape : all) {
             sum += shape.area();
