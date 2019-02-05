@@ -1,6 +1,13 @@
 package org.apidesign.demo.geom;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.lang.management.ManagementFactory;
 import java.util.Random;
+import javax.management.Attribute;
+import javax.management.MBeanServer;
+import javax.management.ObjectInstance;
+import javax.management.ObjectName;
 
 final class Geom {
     public static void main(String[] args) throws Exception {
@@ -9,6 +16,9 @@ final class Geom {
             System.err.println("       object types can be: circle square rectangle triangle");
             System.exit(1);
         }
+        MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+        System.err.println("MBeanServer initialized: " + server);
+        turnProfilingOn(server);
 
         int cnt = Integer.parseInt(args[0]);
         long seed;
@@ -32,8 +42,8 @@ final class Geom {
                 System.err.println("sum: " + sum);
             }
         }
-        System.err.println("last round " + (System.currentTimeMillis() - prev) + " ms. Press Enter to exit...");
-        System.in.read();
+        System.err.println("last round " + (System.currentTimeMillis() - prev) + " ms.");
+        dumpProfilingData(server);
     }
 
     static Shape[] generate(int offset, String[] types, int count, long seed) {
@@ -69,5 +79,39 @@ final class Geom {
             sum += shape.area();
         }
         return sum;
+    }
+
+    private static void turnProfilingOn(MBeanServer server) throws Exception {
+        Exception status = null;
+        for (int i = 0; i < 100000; i++) {
+            status = turnProfilingOn0(server);
+            if (status == null) {
+                break;
+            }
+        }
+        if (status != null) {
+            throw status;
+        }
+    }
+
+    private static Exception turnProfilingOn0(MBeanServer server) {
+        try {
+            ObjectName graalName = new ObjectName("org.graalvm.compiler.hotspot:type=HotSpotGraalRuntime_VM");
+            ObjectInstance graalBean = server.getObjectInstance(graalName);
+            server.setAttribute(graalName, new Attribute("ProfilesCollectExperimental", true));
+            return null;
+        } catch (Exception ex) {
+            return ex;
+        }
+    }
+
+    private static void dumpProfilingData(MBeanServer server) throws Exception {
+        ObjectName graalName = new ObjectName("org.graalvm.compiler.hotspot:type=HotSpotGraalRuntime_VM");
+        String dump = (String) server.invoke(graalName, "profilingDump", null, null);
+        File file = new File("default.iprof").getAbsoluteFile();
+        try (FileWriter w = new FileWriter(file)) {
+            w.write(dump);
+        }
+        System.err.println("profiling saved into: " + file);
     }
 }
