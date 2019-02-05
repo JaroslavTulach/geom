@@ -16,9 +16,10 @@ final class Geom {
             System.err.println("       object types can be: circle square rectangle triangle");
             System.exit(1);
         }
-        MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-        System.err.println("MBeanServer initialized: " + server);
-        turnProfilingOn(server);
+        MBeanServer server = initializeMBeanServer();
+        if (server != null) {
+            turnProfilingOn(server);
+        }
 
         int cnt = Integer.parseInt(args[0]);
         long seed;
@@ -43,7 +44,9 @@ final class Geom {
             }
         }
         System.err.println("last round " + (System.currentTimeMillis() - prev) + " ms.");
-        dumpProfilingData(server);
+        if (server != null) {
+            dumpProfilingData(server);
+        }
     }
 
     static Shape[] generate(int offset, String[] types, int count, long seed) {
@@ -81,11 +84,20 @@ final class Geom {
         return sum;
     }
 
+    private static MBeanServer initializeMBeanServer() {
+        if ("Substrate VM".equals(System.getProperty("java.vm.name"))) {
+            return null;
+        }
+        return ManagementFactory.getPlatformMBeanServer();
+    }
+
+
     private static void turnProfilingOn(MBeanServer server) throws Exception {
         Exception status = null;
         for (int i = 0; i < 100000; i++) {
             status = turnProfilingOn0(server);
             if (status == null) {
+                System.err.println("MBeanServer initialized: " + server);
                 break;
             }
         }
