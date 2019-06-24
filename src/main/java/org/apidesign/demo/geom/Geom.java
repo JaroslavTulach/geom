@@ -94,7 +94,7 @@ final class Geom {
 
     private static void turnProfilingOn(MBeanServer server) throws Exception {
         Exception status = null;
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 1000000; i++) {
             status = turnProfilingOn0(server);
             if (status == null) {
                 System.err.println("MBeanServer initialized: " + server);

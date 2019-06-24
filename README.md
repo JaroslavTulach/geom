@@ -33,6 +33,7 @@ $ /graalvm-ee-19.0.2/bin/native-image --help | grep pgo
 With the GraalVM EE 19.0.2 properly installed we can proceed with initial measuring:
 
 ```bash
+$ git checkout HotSpotMode
 $ JAVA_HOME=/graalvm-ee-19.0.2/ mvn clean install
 $ ./target/geom 15000 now 30 square rectangle
 sum: 4394.341496946556
@@ -48,20 +49,23 @@ all of them with the same probability.
 
 ### The Training
 
-However we can train the code to optimize for certain objects. To do that we
-have to generate a special version of the binary:
+However we can train the code to optimize for certain objects. To do that
+let's execute the `java` command with special parameters
 
 ```bash
-$ JAVA_HOME=/graalvm-ee-19.0.2/ mvn clean install -PProfilesCollect
-$ ./target/geom 15000 now 30 square rectangle
+$ mvn package
+$ /graalvm-ee-19.0.2/bin/java -XX:-UseJVMCINativeLibrary \
+    -jar target/geom-1.0-SNAPSHOT.jar 15000 now 300 square rectangle
 ...
-sum: 4384.131082976915
-last round 108 ms
-    $ ls *iprof
+sum: 4381.741167413585
+last round 23 ms.
+profiling saved into: /geom/default.iprof
+$ ls *iprof
 default.iprof
 ```
-Now the same algorithm runs slower, however that is because we are collecting
-the profiling data. Once the program is finished, an `.iprof` file is generated.
+The process uses JMX connection to its own JVM and turns profiling on.
+Then in executes the actual algorithm and 
+at the end creates an `.iprof` file with collected data.
 
 ### The Race
 
@@ -69,7 +73,8 @@ Now we can recompile once again and see the speedup. Do `install` again. This
 time it finds the `geom.iprof` file and optimizes the binary:
 ```bash
 $ JAVA_HOME=/graalvm-ee-19.0.2/ mvn install -PProfilesUse
-$ ./target/geom 15000 now 30 square rectangle
+$ ./target/geom 15000 now 30 square rectangle # see Work in Progress below
+$ ./target/geom 15000 now 30 square
 ...
 sum: 4401.419731937973
 last round 36 ms
@@ -85,6 +90,23 @@ sum: 8888.679818384859
 last round 74 ms
 ```
 If something like this happens, it is time to re-profile and re-deploy new version.
+
+### Work in Progress
+
+You may see following error:
+```bash
+$ ./target/geom 15000 now 30 rectangle
+Exception in thread "main" com.oracle.svm.core.jdk.UnsupportedFeatureError: Code that was considered unreachable by closed-world analysis was reached
+        at com.oracle.svm.core.util.VMError.unsupportedFeature(VMError.java:102)
+        at com.oracle.svm.core.snippets.SnippetRuntime.unreachedCode(SnippetRuntime.java:180)
+        at org.apidesign.demo.geom.Geom.computeArea(Geom.java:81)
+```
+if such situation happens, try different geometric object:
+```
+$ ./target/geom 15000 now 30 square
+```
+we are tracking the problem as GR-16596 and are working on addressing it in
+a future version of GraalVM EE.
 
 ### The Winner
 
