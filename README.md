@@ -1,4 +1,4 @@
-It is well know that **SubstrateVM** can give you fast startup. However, the peak execution speed may lack 
+It is well known that **SubstrateVM** can give you fast startup. However, the peak execution speed may lack 
 behind JVM with JIT compiler 
 (see [great explanation](https://github.com/oracle/graal/issues/979#issuecomment-480786612) of such behavior). 
 In short, the missing execution profiles are the problem. However,
