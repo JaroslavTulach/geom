@@ -1,10 +1,10 @@
-It is well known that **SubstrateVM** can give you fast startup. However, the peak execution speed may lack 
-behind JVM with JIT compiler 
+It is well known that [GraalVM](https://www.graalvm.org/) `native-image` can give you fast startup. 
+However, the peak execution speed may lack behind JVM with JIT compiler 
 (see [great explanation](https://github.com/oracle/graal/issues/979#issuecomment-480786612) of such behavior). 
 In short, the missing execution profiles are the problem. However,
-**SubstrateVM** enterprise is capable to collect and use such profiles. This demo
-shows the speedup obtained by collecting execution profiles and re-running
-the **SubstrateVM** compilation with the gathered profiling data.
+`native-image` enterprise is capable to collect and use such profiles for its ahead-of-time compilation. 
+This demo shows the speedup obtained by collecting execution profiles and re-running
+the `native-image` compilation with the gathered profiling data.
 
 ### Installation
 
