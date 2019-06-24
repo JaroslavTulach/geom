@@ -1,7 +1,12 @@
-Demonstrating the speedup thanks to generating execution profiles and re-running
-the **SubstrateVM** compilation with the gathered data.
+It is well know that **SubstrateVM** can give you fast startup. However, the peak execution speed may lack 
+behind JVM with JIT compiler 
+(see [great explanation](https://github.com/oracle/graal/issues/979#issuecomment-480786612) of such behavior). 
+In short, the missing execution profiles are the problem. However,
+**SubstrateVM** enterprise is capable to collect and use such profiles. This demo
+shows the speedup obtained by collecting execution profiles and re-running
+the **SubstrateVM** compilation with the gathered profiling data.
 
-### Initial Benchmarking
+### Installation
 
 Get [GraalVM](https://www.graalvm.org/) Enterprise Edition version 19.0.2 by
 downloading it from the
@@ -23,7 +28,9 @@ $ /graalvm-ee-19.0.2/bin/native-image --help | grep pgo
     --pgo-instrument      instrument AOT compiled code to collect data for profile-guided
 ```
 
-Now we can proceed with initial measuring:
+### Initial Benchmarking
+
+With the GraalVM EE 19.0.2 properly installed we can proceed with initial measuring:
 
 ```bash
 $ JAVA_HOME=/graalvm-ee-19.0.2/ mvn clean install
