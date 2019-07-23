@@ -113,7 +113,7 @@ final class Geom {
         try {
             ObjectName graalName = new ObjectName("org.graalvm.compiler.hotspot:type=HotSpotGraalRuntime_VM");
             ObjectInstance graalBean = server.getObjectInstance(graalName);
-            server.setAttribute(graalName, new Attribute("ProfilesCollectExperimental", true));
+            server.setAttribute(graalName, new Attribute("PGOInstrument", "\"true\""));
             return null;
         } catch (Exception ex) {
             return ex;
