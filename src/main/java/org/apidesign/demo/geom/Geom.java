@@ -88,6 +88,9 @@ final class Geom {
         if ("Substrate VM".equals(System.getProperty("java.vm.name"))) {
             return null;
         }
+        if (System.getProperty("graal.PGOInstrument") != null) {
+            return null;
+        }
         return ManagementFactory.getPlatformMBeanServer();
     }
 

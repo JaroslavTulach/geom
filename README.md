@@ -1,14 +1,14 @@
-It is well know that **SubstrateVM** can give you fast startup. However, the peak execution speed may lack 
-behind JVM with JIT compiler 
-(see [great explanation](https://github.com/oracle/graal/issues/979#issuecomment-480786612) of such behavior). 
+It is well known that [GraalVM](https://www.graalvm.org/)'s `native-image` 
+tool gives you fast startup. However, the peak execution speed may lack behind JVM with JIT compiler
+(see [great explanation](https://github.com/oracle/graal/issues/979#issuecomment-480786612) of such behavior).
 In short, the missing execution profiles are the problem. However,
-**SubstrateVM** enterprise is capable to collect and use such profiles. This demo
+`native-image` enterprise is capable to collect and use such profiles. This demo
 shows the speedup obtained by collecting execution profiles and re-running
-the **SubstrateVM** compilation with the gathered profiling data.
+the `native-image` compilation with the gathered profiling data.
 
 ### Installation
 
-Get [GraalVM](https://www.graalvm.org/) Enterprise Edition version 19.0.2 by
+Get [GraalVM](https://www.graalvm.org/) Enterprise Edition version 19.2.0 by
 downloading it from the
 [Oracle Technology Network](https://www.oracle.com/technetwork/graalvm/downloads/index.html).
 Unpack it.
@@ -18,23 +18,26 @@ the same [OTN page](https://www.oracle.com/technetwork/graalvm/downloads/index.h
 Install it using the `gu` tool:
 
 ```bash
-$ /graalvm-ee-19.0.2/bin/gu install --file native-image-installable-svm-svmee-*-19.0.2.jar
+$ /graalvm-ee-19.2.0/bin/gu install --file native-image-installable-svm-svmee-*-19.2.0.jar
 ```
 
 Verify that PGO support is available:
+
 ```bash
-$ /graalvm-ee-19.0.2/bin/native-image --help | grep pgo
+$ /graalvm-ee-19.2.0/bin/native-image --help | grep pgo
     --pgo                 a comma-separated list of files from which to read the data
     --pgo-instrument      instrument AOT compiled code to collect data for profile-guided
 ```
 
 ### Initial Benchmarking
 
-With the GraalVM EE 19.0.2 properly installed we can proceed with initial measuring:
+With the GraalVM EE 19.2.0 properly installed we can proceed with initial measuring:
 
 ```bash
+$ git clone https://github.com/jaroslavtulach/geom/
+$ cd geom
 $ git checkout HotSpotMode
-$ JAVA_HOME=/graalvm-ee-19.0.2/ mvn clean install
+$ JAVA_HOME=/graalvm-ee-19.2.0/ mvn clean install
 $ ./target/geom 15000 now 30 square rectangle
 sum: 4394.341496946556
 last round 55 ms
@@ -54,26 +57,25 @@ let's execute the `java` command with special parameters
 
 ```bash
 $ mvn package
-$ /graalvm-ee-19.0.2/bin/java -XX:-UseJVMCINativeLibrary \
+$ /graalvm-ee-19.2.0/bin/java -Dgraal.PGOInstrument=default.iprof \
     -jar target/geom-1.0-SNAPSHOT.jar 15000 now 300 square rectangle
 ...
 sum: 4381.741167413585
 last round 23 ms.
-profiling saved into: /geom/default.iprof
 $ ls *iprof
 default.iprof
 ```
-The process uses JMX connection to its own JVM and turns profiling on.
-Then in executes the actual algorithm and 
-at the end creates an `.iprof` file with collected data.
+The JVM collects the profiling information and at the shutdown writes
+them to the specified `default.iprof` file.
 
 ### The Race
 
 Now we can recompile once again and see the speedup. Do `install` again. This
-time it finds the `geom.iprof` file and optimizes the binary:
+time it finds the `default.iprof` file and optimizes the binary:
+
 ```bash
-$ JAVA_HOME=/graalvm-ee-19.0.2/ mvn install -PProfilesUse
-$ ./target/geom 15000 now 30 square rectangle # see Work in Progress below
+$ JAVA_HOME=/graalvm-ee-19.2.0/ mvn install -PProfilesUse
+$ ./target/geom 15000 now 30 square rectangle
 $ ./target/geom 15000 now 30 square
 ...
 sum: 4401.419731937973
@@ -84,6 +86,7 @@ That means **35%** speedup!
 However, the speed is only improved when the trained for geometric shapes are
 being processed. Should the other ones appear too, the execution slows down. At
 the end, it can be even less performant than the non-optimized version:
+
 ```bash
 $ ./target/geom 15000 now 30 triangle circle
 sum: 8888.679818384859
@@ -91,25 +94,8 @@ last round 74 ms
 ```
 If something like this happens, it is time to re-profile and re-deploy new version.
 
-### Work in Progress
-
-You may see following error:
-```bash
-$ ./target/geom 15000 now 30 rectangle
-Exception in thread "main" com.oracle.svm.core.jdk.UnsupportedFeatureError: Code that was considered unreachable by closed-world analysis was reached
-        at com.oracle.svm.core.util.VMError.unsupportedFeature(VMError.java:102)
-        at com.oracle.svm.core.snippets.SnippetRuntime.unreachedCode(SnippetRuntime.java:180)
-        at org.apidesign.demo.geom.Geom.computeArea(Geom.java:81)
-```
-if such situation happens, try different geometric object:
-```
-$ ./target/geom 15000 now 30 square
-```
-we are tracking the problem as GR-16596 and are working on addressing it in
-a future version of GraalVM EE.
-
 ### The Winner
 
 It is well known that `native-image` can give you fast startup. However with
-the help of the `--pgo-instrument` and `--pgo` options, it can also give
+the help of the `-Dgraal.PGOInstrument` and `--pgo` options, it can also give
 you execution speed optimal for your workloads.
